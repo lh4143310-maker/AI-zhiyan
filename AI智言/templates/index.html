@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智言中文 - 智能文本分析与问答平台</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --primary-dark: #3730a3;
+            --secondary: #06b6d4;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface-hover: #f1f5f9;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius: 12px;
+            --radius-lg: 16px;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* ===== 顶部导航 ===== */
+        .navbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: #ecfdf5;
+            color: var(--success);
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ===== 主体布局 ===== */
+        .layout {
+            display: flex;
+            max-width: 1280px;
+            margin: 0 auto;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* ===== 侧边栏 ===== */
+        .sidebar {
+            width: 280px;
+            padding: 24px;
+            border-right: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+            padding-left: 12px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+            border: none;
+            background: none;
+            width: 100%;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.15);
+        }
+
+        .nav-item.active .nav-icon {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .model-info {
+            margin-top: 32px;
+            padding: 16px;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: var(--radius);
+            border: 1px solid #bae6fd;
+        }
+
+        .model-info-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #0369a1;
+            margin-bottom: 8px;
+        }
+
+        .model-info-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            padding: 4px 0;
+        }
+
+        /* ===== 主内容区 ===== */
+        .main {
+            flex: 1;
+            padding: 32px 40px;
+            max-width: 800px;
+        }
+
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* ===== 卡片 ===== */
+        .panel {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .panel-body {
+            padding: 24px;
+        }
+
+        /* ===== 输入区域 ===== */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .input-hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--surface);
+            transition: all 0.2s;
+            resize: vertical;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        textarea { min-height: 140px; line-height: 1.7; }
+        textarea::placeholder, input::placeholder { color: var(--text-muted); }
+
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            background: var(--surface-hover);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .chip:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* ===== 按钮 ===== */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* ===== 结果区域 ===== */
+        .result-area {
+            margin-top: 24px;
+            display: none;
+        }
+        .result-area.show { display: block; animation: fadeUp 0.3s ease; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+            border: 1px solid #ddd6fe;
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            position: relative;
+        }
+
+        .result-card.success {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border-color: #a7f3d0;
+        }
+
+        .result-card.info {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-color: #bae6fd;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .result-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .result-copy {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            background: rgba(255,255,255,0.7);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .result-copy:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        .result-body {
+            font-size: 1.05rem;
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .meta-item strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .badge-result {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            gap: 6px;
+        }
+
+        .badge-result.positive {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-result.negative {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* ===== 加载状态 ===== */
+        .loading-state {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
+            padding: 16px 20px;
+            background: var(--surface-hover);
+            border-radius: var(--radius);
+        }
+        .loading-state.show { display: flex; }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* ===== 空状态 / 欢迎 ===== */
+        .welcome {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .welcome-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .welcome h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .welcome p {
+            font-size: 0.9rem;
+        }
+
+        /* ===== 隐藏区 ===== */
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.25s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main { padding: 20px; max-width: 100%; }
+            .navbar { padding: 0 16px; }
+        }
+
+        /* ===== Toast ===== */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            background: var(--text);
+            color: white;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="brand">
+            <div class="brand-icon">智</div>
+            <span>智言中文</span>
+        </div>
+        <div class="nav-right">
+            <div class="status-pill">
+                <span class="status-dot"></span>
+                <span id="deviceText">服务运行中</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="layout">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-title">功能模块</div>
+            <button class="nav-item active" onclick="switchTab('sentiment', this)">
+                <div class="nav-icon">😊</div>
+                <div>
+                    <div style="font-weight:500">情感分析</div>
+                    <div style="font-size:0.75rem;opacity:0.7">文本情感倾向识别</div>
+                </div>
+            </button>
+            <button class="nav-item" onclick="switchTab('summary', this)">
+                <div class="nav-icon">📝</div>
+                <div>
+                    <div style="font-weight:500">文本摘要</div>
+                    <div style="font-size:0.75rem;opacity:0.7">自动提取文章摘要</div>
+                </div>
+            </button>
+            <button class="nav-item" onclick="switchTab('qa', this)">
+                <div class="nav-icon">💬</div>
+                <div>
+                    <div style="font-weight:500">智能问答</div>
+                    <div style="font-size:0.75rem;opacity:0.7">基于上下文回答问题</div>
+                </div>
+            </button>
+            <div class="model-info">
+                <div class="model-info-title">模型信息</div>
+                <div class="model-info-item">
+                    <span>基座模型</span>
+                    <span style="color:var(--text);font-weight:500">BART-base-chinese</span>
+                </div>
+                <div class="model-info-item">
+                    <span>情感模型</span>
+                    <span id="m-sentiment" style="color:var(--success)">已加载</span>
+                </div>
+                <div class="model-info-item">
+                    <span>摘要模型</span>
+                    <span id="m-summary" style="color:var(--success)">已加载</span>
+                </div>
+                <div class="model-info-item">
+                    <span>问答模型</span>
+                    <span id="m-qa" style="color:var(--success)">已加载</span>
+                </div>
+                <div class="model-info-item">
+                    <span>复核 Agent</span>
+                    <span id="m-review">检测中...</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主内容 -->
+        <main class="main">
+            <!-- ========== 情感分析 ========== -->
+            <div id="sentiment" class="section active">
+                <div class="page-header">
+                    <h1>情感分析</h1>
+                    <p>分析中文文本的情感倾向，自动识别积极或消极情绪</p>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">输入文本</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="input-group">
+                            <label class="input-label">待分析文本</label>
+                            <p class="input-hint">支持任意长度的中文句子、段落或评论</p>
+                            <textarea id="sentimentText" placeholder="请输入要分析的中文文本..."></textarea>
+                            <div class="quick-actions">
+                                <button class="chip" onclick="setText('sentimentText', '这部电影真的太棒了，演员演技在线，剧情紧凑，强烈推荐！')">正面评论</button>
+                                <button class="chip" onclick="setText('sentimentText', '服务态度极差，等了一个小时还没上菜，再也不会来了。')">负面评论</button>
+                                <button class="chip" onclick="setText('sentimentText', '产品质量一般，包装还算完好，物流速度正常。')">中性描述</button>
+                            </div>
+                        </div>
+                        <button class="btn-primary" id="sentimentBtn" onclick="analyzeSentiment()">
+                            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            开始分析
+                        </button>
+                        <div class="loading-state" id="sentimentLoading">
+                            <div class="spinner"></div>
+                            <span class="loading-text">BART Agent 分析中 → DeepSeek Agent 复核中...</span>
+                        </div>
+                        <div class="result-area" id="sentimentResult">
+                            <div class="result-card success">
+                                <div class="result-header">
+                                    <span class="result-title">BART Agent 分析结果</span>
+                                    <button class="result-copy" onclick="copyResult('sentimentResultText')">复制结果</button>
+                                </div>
+                                <div class="result-body" id="sentimentResultText"></div>
+                                <div class="result-meta">
+                                    <div class="meta-item">情感倾向: <strong id="sentimentLabel"></strong></div>
+                                    <div class="meta-item">置信度: <strong id="sentimentConfidence"></strong></div>
+                                </div>
+                                <div id="sentimentReviewInfo" style="margin-top:10px;font-size:0.8rem;color:var(--text-muted);display:none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 文本摘要 ========== -->
+            <div id="summary" class="section">
+                <div class="page-header">
+                    <h1>文本摘要</h1>
+                    <p>基于 BART 序列生成模型，自动将长文本压缩为简洁摘要</p>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">输入长文</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="input-group">
+                            <label class="input-label">原文内容</label>
+                            <p class="input-hint">输入新闻、文章或其他长文本，模型将自动生成摘要</p>
+                            <textarea id="summaryText" placeholder="请输入需要摘要的长文本..."></textarea>
+                            <div class="quick-actions">
+                                <button class="chip" onclick="setText('summaryText', '北京时间4月22日，中国航天科技集团发布消息称，长征七号遥八运载火箭已完成出厂前所有研制工作，于近日安全运抵文昌航天发射场。后续，该火箭将与先期已运抵的天舟七号货运飞船一起，按计划开展发射场区总装和测试工作，择机发射。')">航天新闻</button>
+                                <button class="chip" onclick="setText('summaryText', '据日本鹿儿岛地方气象台消息，当地时间3日13时49分左右，位于鹿儿岛县和宫崎县交界地区雾岛山的新燃岳火山喷发，火山灰柱最大高度达5000米。气象部门已发布火山口周边警报，呼吁附近居民注意安全。')">自然灾害</button>
+                            </div>
+                        </div>
+                        <button class="btn-primary" id="summaryBtn" onclick="generateSummary()">
+                            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            生成摘要
+                        </button>
+                        <div class="loading-state" id="summaryLoading">
+                            <div class="spinner"></div>
+                            <span class="loading-text">BART Agent 摘要中 → DeepSeek Agent 复核中...</span>
+                        </div>
+                        <div class="result-area" id="summaryResult">
+                            <div class="result-card info">
+                                <div class="result-header">
+                                    <span class="result-title">BART Agent 摘要结果</span>
+                                    <button class="result-copy" onclick="copyResult('summaryOutput')">复制结果</button>
+                                </div>
+                                <div class="result-body" id="summaryOutput" style="font-style:italic"></div>
+                                <div id="summarizeReviewInfo" style="margin-top:10px;font-size:0.8rem;color:var(--text-muted);display:none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 智能问答 ========== -->
+            <div id="qa" class="section">
+                <div class="page-header">
+                    <h1>智能问答</h1>
+                    <p>基于 DuReader 数据集训练的阅读理解模型，从给定上下文中提取答案</p>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">输入问题与上下文</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="input-group">
+                            <label class="input-label">问题</label>
+                            <input type="text" id="qaQuestion" placeholder="请输入你的问题...">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">上下文 / 参考文章</label>
+                            <p class="input-hint">提供与问题相关的背景信息或文章段落</p>
+                            <textarea id="qaContext" placeholder="请输入相关上下文文章..." style="min-height:160px"></textarea>
+                            <div class="quick-actions">
+                                <button class="chip" onclick="fillQA('中国首艘国产航母叫什么名字？', '2019年12月17日，经中央军委批准，中国第一艘国产航母命名为中国人民解放军海军山东舰，舷号为17。山东舰在海南三亚某军港交付海军。')">山东舰</button>
+                                <button class="chip" onclick="fillQA('《红楼梦》的作者是谁？', '《红楼梦》，中国古代章回体长篇小说，中国古典四大名著之一，一般认为是清代作家曹雪芹所著。小说以贾、史、王、薛四大家族的兴衰为背景。')">红楼梦</button>
+                            </div>
+                        </div>
+                        <button class="btn-primary" id="qaBtn" onclick="answerQuestion()">
+                            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            获取答案
+                        </button>
+                        <div class="loading-state" id="qaLoading">
+                            <div class="spinner"></div>
+                            <span class="loading-text">BART Agent 推理中 → DeepSeek Agent 复核中...</span>
+                        </div>
+                        <div class="result-area" id="qaResult">
+                            <div class="result-card">
+                                <div class="result-header">
+                                    <span class="result-title">BART Agent 回答</span>
+                                    <button class="result-copy" onclick="copyResult('qaAnswer')">复制答案</button>
+                                </div>
+                                <div class="result-body" id="qaAnswer"></div>
+                                                                <div id="qaReviewInfo" style="margin-top:10px;font-size:0.8rem;color:var(--text-muted);display:none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        // 页面加载时获取设备和审查状态
+        fetch(`${API_BASE}/health`).then(r => r.json()).then(d => {
+            document.getElementById('deviceText').textContent = d.device.includes('cuda') ? 'GPU 加速中' : 'CPU 运行中';
+        }).catch(() => {});
+
+        fetch(`${API_BASE}/review/status`).then(r => r.json()).then(d => {
+            const rev = document.getElementById('m-review');
+            if (d.enabled) {
+                rev.textContent = '已启用';
+                rev.style.color = 'var(--success)';
+            } else {
+                rev.textContent = '未配置';
+                rev.style.color = 'var(--warning)';
+            }
+        }).catch(() => {});
+
+        function switchTab(tab, btn) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+        }
+
+        function setText(id, text) {
+            document.getElementById(id).value = text;
+        }
+
+        function fillQA(q, c) {
+            document.getElementById('qaQuestion').value = q;
+            document.getElementById('qaContext').value = c;
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function copyResult(id) {
+            const text = document.getElementById(id).innerText || document.getElementById(id).textContent;
+            navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板'));
+        }
+
+        function setLoading(id, loading) {
+            const el = document.getElementById(id);
+            const btn = document.getElementById(id.replace('Loading', 'Btn'));
+            if (loading) {
+                el.classList.add('show');
+                if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+            } else {
+                el.classList.remove('show');
+                if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+            }
+        }
+
+        async function analyzeSentiment() {
+            const text = document.getElementById('sentimentText').value.trim();
+            if (!text) return showToast('请输入待分析的文本');
+
+            setLoading('sentimentLoading', true);
+            document.getElementById('sentimentResult').classList.remove('show');
+
+            try {
+                const res = await fetch(`${API_BASE}/sentiment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                const data = await res.json();
+                const isPositive = data.sentiment === '积极';
+                document.getElementById('sentimentResultText').innerHTML =
+                    `<span class="badge-result ${isPositive ? 'positive' : 'negative'}">${isPositive ? '👍' : '👎'} ${data.sentiment}</span>`;
+                document.getElementById('sentimentLabel').textContent = data.sentiment;
+                document.getElementById('sentimentConfidence').textContent = (parseFloat(data.confidence) * 100).toFixed(1) + '%';
+                renderReviewInfo('sentimentReviewInfo', data.review);
+                document.getElementById('sentimentResult').classList.add('show');
+            } catch (e) {
+                showToast('请求失败: ' + e.message);
+            } finally {
+                setLoading('sentimentLoading', false);
+            }
+        }
+
+        async function generateSummary() {
+            const text = document.getElementById('summaryText').value.trim();
+            if (!text) return showToast('请输入需要摘要的文本');
+
+            setLoading('summaryLoading', true);
+            document.getElementById('summaryResult').classList.remove('show');
+
+            try {
+                const res = await fetch(`${API_BASE}/summarize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                const data = await res.json();
+                document.getElementById('summaryOutput').textContent = data.summary;
+                renderReviewInfo('summarizeReviewInfo', data.review);
+                document.getElementById('summaryResult').classList.add('show');
+            } catch (e) {
+                showToast('请求失败: ' + e.message);
+            } finally {
+                setLoading('summaryLoading', false);
+            }
+        }
+
+        async function answerQuestion() {
+            const question = document.getElementById('qaQuestion').value.trim();
+            const context = document.getElementById('qaContext').value.trim();
+            if (!question || !context) return showToast('请输入问题和上下文');
+
+            setLoading('qaLoading', true);
+            document.getElementById('qaResult').classList.remove('show');
+
+            try {
+                const res = await fetch(`${API_BASE}/qa`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question, context })
+                });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || '请求失败');
+                }
+                const data = await res.json();
+                document.getElementById('qaAnswer').textContent = data.answer;
+                renderReviewInfo('qaReviewInfo', data.review);
+                document.getElementById('qaResult').classList.add('show');
+            } catch (e) {
+                showToast('请求失败: ' + e.message);
+            } finally {
+                setLoading('qaLoading', false);
+            }
+        }
+
+        function renderReviewInfo(elementId, review) {
+            const el = document.getElementById(elementId);
+            if (!review) {
+                el.style.display = 'none';
+                return;
+            }
+            const passed = review.passed;
+            const score = review.score || 100;
+            const scoreColor = score >= 90 ? '#10b981' : (score >= 70 ? '#f59e0b' : '#ef4444');
+            const icon = passed ? '✅' : '⚠️';
+            const status = passed ? '已通过复核' : '已修正';
+            const issues = review.issues && review.issues.length ? review.issues.join('、') : '无';
+
+            el.innerHTML =
+                `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border-radius:8px;border:1px solid var(--border);">
+                    <span>${icon}</span>
+                    <div>
+                        <span style="font-weight:500;color:var(--text);">${status}</span>
+                        <span style="color:var(--text-muted);"> · 质量评分 </span>
+                        <span style="font-weight:600;color:${scoreColor};">${score}</span>
+                        <span style="color:var(--text-muted);">/100 · 复核: DeepSeek</span>
+                    </div>
+                </div>
+                ${review.reason ? `<div style="margin-top:6px;padding:6px 12px;font-size:0.75rem;color:var(--text-secondary);background:#fff;border-radius:6px;border:1px solid var(--border);">${review.reason}</div>` : ''}`;
+            el.style.display = 'block';
+        }
+
+
+    </script>
+</body>
+</html>
